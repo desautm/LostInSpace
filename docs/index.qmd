@@ -1,0 +1,239 @@
+---
+title: "Perdus dans l'espace!"
+author: "Marc-André Désautels"
+date: "Octobre 2023?"
+format: revealjs
+title-slide-attributes:
+  data-background-color: black
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+set.seed(987654321)
+knitr::opts_chunk$set(
+  echo = FALSE,
+  cache = TRUE
+)
+
+library(tidyverse)
+library(grid)
+library(here)
+library(autoimage)
+
+NUMBER_OF_STARS <- 250
+xc <- runif(NUMBER_OF_STARS)
+yc <- runif(NUMBER_OF_STARS)
+
+thesky <- tibble(
+  x = xc,
+  y = yc,
+  type = sample(c("real", "missing", "extra"), NUMBER_OF_STARS, prob = c(0.8,0.1,0.1), replace = TRUE)
+)
+wndow <- 0.25
+mysky <- thesky %>% 
+  filter(
+    xc >= 0.5-wndow,
+    xc <= 0.5+wndow,
+    yc >= 0.5-wndow,
+    yc <= 0.5+wndow
+  )
+mycoords <- matrix(c(mysky$x,mysky$y),ncol=2)
+rot_mycoords <- rotate(mycoords, pi/4, pivot = c(0.5, 0.5))
+rot_mysky <- tibble(
+  x = rot_mycoords[,1],
+  y = rot_mycoords[,2],
+  type = mysky$type
+)
+
+rot_mysky %>% 
+  filter(
+    type %in% c("real","extra")
+  ) %>% 
+  ggplot(aes(x = x, y = y))+
+  geom_point(color = "white", size = 2) +
+  theme_void()+
+  theme(legend.position="none")+
+  coord_cartesian(xlim = c(0,1), ylim=c(0,1))
+ggsave("rot_mysky_real_extra.png",path=here("docs"),width = 5, height = 5)
+
+rot_mysky %>% 
+  filter(
+    type %in% c("real","extra","missing")
+  ) %>% 
+  ggplot(aes(x = x, y = y))+
+  geom_point(color = "white", size = 2) +
+  theme_void()+
+  theme(legend.position="none")+
+  coord_cartesian(xlim = c(0,1), ylim=c(0,1))
+ggsave("rot_mysky_real_extra_missing.png",path=here("docs"),width = 5, height = 5)
+
+rot_mysky %>% 
+  filter(
+    type %in% c("real","missing")
+  ) %>% 
+  ggplot(aes(x = x, y = y))+
+  geom_point(color = "white", size = 2) +
+  theme_void()+
+  theme(legend.position="none")+
+  coord_cartesian(xlim = c(0,1), ylim=c(0,1))
+ggsave("rot_mysky_real_missing.png",path=here("docs"),width = 5, height = 5)
+
+rot_mysky %>% 
+  filter(
+    type %in% c("real","missing")
+  ) %>% 
+  ggplot(aes(x = x, y = y))+
+  geom_polygon(data=data.frame(x=c(0.5,0.8536,0.5,0.1464),y=c(0.1464,0.5,0.8536,0.5)),color="red",fill="white",alpha=0,linewidth=1.25)+
+  geom_point(color = "white", size = 2) +
+  theme_void()+
+  theme(legend.position="none")+
+  coord_cartesian(xlim = c(0,1), ylim=c(0,1))
+ggsave("rot_mysky_real_missing_rect.png",path=here("docs"),width = 5, height = 5)
+
+mysky %>% 
+  filter(
+    type %in% c("real","missing")
+  ) %>% 
+  ggplot(aes(x = x, y = y))+
+  geom_point(color = "white", size = 2) +
+  theme_void()+
+  theme(legend.position="none")+
+  coord_cartesian(xlim = c(0,1), ylim=c(0,1))
+ggsave("mysky_real_missing.png",path=here("docs"),width = 5, height = 5)
+
+mysky %>% 
+  filter(
+    type %in% c("real","missing")
+  ) %>% 
+  ggplot(aes(x = x, y = y))+
+  geom_rect(aes(xmin=0.25,xmax=0.75,ymin=0.25,ymax=0.75),color="red",fill="white",alpha=0,linewidth=1.25)+
+  geom_point(color = "white", size = 2) +
+  theme_void()+
+  theme(legend.position="none")+
+  coord_cartesian(xlim = c(0,1), ylim=c(0,1))
+ggsave("mysky_real_missing_rect.png",path=here("docs"),width = 5, height = 5)
+
+thesky %>% 
+  filter(
+    type %in% c("real","missing")
+  ) %>% 
+  ggplot(aes(x = x, y = y))+
+  geom_point(color = "white", size = 2) +
+  theme_void()+
+  theme(legend.position="none")+
+  coord_cartesian(xlim = c(0,1), ylim=c(0,1))
+ggsave("thesky_real_missing.png",path=here("docs"),width = 5, height = 5)
+```
+
+## {background-image="https://decider.com/wp-content/uploads/2018/03/lost-in-space-60s.jpg?quality=90&strip=all&w=646&h=431&crop=1" background-size="1200px"}
+
+## {background-image="https://cdn.mos.cms.futurecdn.net/YHXMXXEmBvyXUpTizWNkHP.jpg" background-size="cover"}
+
+## {background-image="https://venkatarangan.com/blog/wp-content/uploads/2018/10/lost-in-space-pics.jpg" background-size="cover"}
+
+## {background-image="elephant_trunk.jpg" background-size="cover"}
+
+## Astrometry
+
+::: {layout-ncol=3}
+
+![](astrometry_trunk1.png)
+
+![](astrometry_trunk2.png)
+
+![](astrometry_trunk3.png)
+
+:::
+
+##
+
+| Info              |                            |
+|-------------------|----------------------------|
+| Center (RA, Dec)  | (323.622, 57.455)          |
+| Center (RA, hms)  | 21h 34m 29.209s            |
+| Center (Dec, dms) | +57$^\circ$ 27' 19.375''   |
+| Size              | 44.4 $\times$ 29.1 arcmin  |
+| Radius            | 0.442 deg                  |
+| Pixel scale       | 0.645 arcsec/pixel         |
+| Orientation       | Up is 348.3 degrees E of N |
+
+## {background-image="astrometry_trunk_annotated.png" background-size="1200px"}
+
+## {background-image="astrometry_trunk_extracted.png" background-size="1200px"}
+
+## {data-background-color=black}
+
+#### Il faut trouver ce champ d'étoiles dans ce ciel 
+
+![](rot_mysky_real_extra.png){.absolute top="100" left="10" width="500" height="500"}
+
+![](thesky_real_missing.png){.absolute top="100" right="10" width="500" height="500"}
+
+## {auto-animate="true" data-background-color=black}
+
+#### Il faut trouver ce champ d'étoiles dans ce ciel 
+
+- Étoiles manquantes
+
+![](rot_mysky_real_extra_missing.png){.absolute top="100" left="10" width="500" height="500"}
+
+![](thesky_real_missing.png){.absolute top="100" right="10" width="500" height="500"}
+
+## {data-background-color=black}
+
+#### Il faut trouver ce champ d'étoiles dans ce ciel 
+
+- Étoiles manquantes
+- Étoiles en trop
+
+![](rot_mysky_real_missing.png){.absolute top="100" left="10" width="500" height="500"}
+
+![](thesky_real_missing.png){.absolute top="100" right="10" width="500" height="500"}
+
+## {data-background-color=black}
+
+#### Il faut trouver ce champ d'étoiles dans ce ciel 
+
+![](rot_mysky_real_missing_rect.png){.absolute top="100" left="10" width="500" height="500"}
+
+![](thesky_real_missing.png){.absolute top="100" right="10" width="500" height="500"}
+
+
+## {auto-animate="true" data-background-color=black}
+
+#### Il faut trouver ce champ d'étoiles dans ce ciel 
+
+![](thesky_real_missing.png){.absolute top="100" right="10" width="500" height="500"}
+
+![](mysky_real_missing_rect.png){.absolute top="100" left="10" width="500" height="500"}
+
+## {auto-animate="true" data-background-color=black}
+
+#### Il faut trouver ce champ d'étoiles dans ce ciel 
+
+![](thesky_real_missing.png){.absolute top="100" right="10" width="500" height="500"}
+
+![](mysky_real_missing_rect.png){.absolute top="100" right="10" width="500" height="500"}
+
+
+
+## Quarto {data-background-color=red}
+
+Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
+
+## Bullets
+
+When you click the **Render** button a document will be generated that includes:
+
+-   Content authored with markdown
+-   Output from executable code
+
+## Code
+
+When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+

@@ -1,0 +1,131 @@
+---
+title: "Lost In Space"
+subtitle: "Perdus dans l'espace"
+author: "[Marc-André Désautels](https://madesautels.rbind.io) "
+institute: "Cégep Saint-Jean-sur-Richelieu"
+date: "??? <br><br> Présentation disponible à https://desautm.github.io/LostInSpace <br> Code disponible à  https://github.com/desautm/LostInSpace"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+background-image: url(https://upload.wikimedia.org/wikipedia/commons/b/be/Sharingan_triple.svg)
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+set.seed(987654321)
+knitr::opts_chunk$set(
+  echo=FALSE
+)
+
+library(tidyverse)
+library(ggforce)
+library(plothelper)
+library(OpenImageR)
+library(here)
+```
+
+???
+
+Image credit: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Sharingan_triple.svg)
+
+---
+
+```{r mysky, echo=FALSE}
+NUMBER_OF_STARS <- 250
+mysky <- tibble(
+  x = runif(NUMBER_OF_STARS),
+  y = runif(NUMBER_OF_STARS),
+  type = sample(c("real", "missing", "extra"), NUMBER_OF_STARS, prob = c(0.8,0.1,0.1), replace = TRUE)
+)
+mysky_rot <- rotatexy(mysky, angle = pi/4, xmiddle = 0.5, ymiddle = 0.5)
+
+xzoom <- 0.6
+yzoom <- 0.4
+wzoom <- 0.25
+
+myzoom <- tribble(
+  ~x, ~y,
+  xzoom, yzoom,
+  xzoom+wzoom, yzoom,
+  xzoom+wzoom, yzoom+wzoom,
+  xzoom, yzoom+wzoom
+)
+myzoom_rot <- rotatexy(myzoom, angle = pi/4, xmiddle = 0.5, ymiddle = 0.5)
+  
+```
+
+.pull-left[
+.center[
+```{r}
+mysky %>% 
+  rotatexy(angle = pi/4, xmiddle = 0.5, ymiddle = 0.5) %>% 
+  ggplot(aes(x = x, y = y))+
+  geom_point(color = "white", size = 2) +
+  theme_void()+
+  theme(legend.position="none")+
+  theme(panel.background = element_rect(fill="black"))+
+  coord_cartesian(xlim = c(0,1), ylim=c(0,1))
+```
+]
+]
+
+.pull-right[
+```{r}
+mysky %>% 
+  ggplot(aes(x = x, y = y))+
+  geom_point(color = "white", size = 2) +
+  theme_void()+
+  theme(legend.position="none")+
+  theme(panel.background = element_rect(fill="black"))+
+  annotate("rect",xmin=xzoom,ymin=yzoom,xmax=xzoom+wzoom,ymax=yzoom+wzoom, alpha = 0.25)
+```
+]
+
+---
+
+.pull-left[
+.center[
+```{r,out.width="25%"}
+mysky %>% 
+  rotatexy(angle = pi/4, xmiddle = 0.5, ymiddle = 0.5) %>%
+  ggplot(aes(x = x, y = y))+
+  geom_point(color = "white", size = 8) +
+  theme_void()+
+  theme(legend.position="none")+
+  theme(panel.background = element_rect(fill="black"))+
+  coord_cartesian(xlim=c(min(myzoom_rot$x),max(myzoom_rot$x)),ylim=c(min(myzoom_rot$y),max(myzoom_rot$y)))
+```
+]
+]
+
+.pull-right[
+```{r}
+mysky %>% 
+  ggplot(aes(x = x, y = y))+
+  geom_point(color = "white", size = 2) +
+  theme_void()+
+  theme(legend.position="none")+
+  theme(panel.background = element_rect(fill="black"))+
+  annotate("rect",xmin=xzoom,ymin=yzoom,xmax=xzoom+wzoom,ymax=yzoom+wzoom, alpha = 0.25)
+```
+]
+
+---
+
+```{r}
+mysky %>% 
+  subset(type %in% c("real", "missing")) %>% 
+  ggplot(aes(x = x, y = y, color = type))+
+  geom_point(size = 2) +
+  theme_void()+
+  theme(legend.position="none")+
+  theme(panel.background = element_rect(fill="black"))
+```
+
+
+
