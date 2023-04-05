@@ -2,7 +2,9 @@
 title: "Perdus dans l'espace!"
 author: "Marc-André Désautels"
 date: "Octobre 2023?"
-format: revealjs
+format: 
+  revealjs:
+    preview-links: auto
 title-slide-attributes:
   data-background-color: black
 ---
@@ -16,11 +18,12 @@ knitr::opts_chunk$set(
 )
 
 library(tidyverse)
-library(grid)
+library(readxl)
 library(here)
 library(autoimage)
+library(magick)
 
-NUMBER_OF_STARS <- 250
+NUMBER_OF_STARS <- 300
 xc <- runif(NUMBER_OF_STARS)
 yc <- runif(NUMBER_OF_STARS)
 
@@ -123,17 +126,47 @@ thesky %>%
   theme(legend.position="none")+
   coord_cartesian(xlim = c(0,1), ylim=c(0,1))
 ggsave("thesky_real_missing.png",path=here("docs"),width = 5, height = 5)
+
+stars <- read_delim(here("R","stars.csv"))
+
+elephant <- image_read(here("docs","elephant_trunk.jpg"))
+elephant_info <- image_info(elephant)
+w <- elephant_info$width
+h <- elephant_info$height
+brightest <- stars %>% 
+  arrange(mag) %>% 
+  head(100) %>% 
+  mutate(Y = h/2-(Y-h/2))
 ```
 
-## {background-image="https://decider.com/wp-content/uploads/2018/03/lost-in-space-60s.jpg?quality=90&strip=all&w=646&h=431&crop=1" background-size="1200px"}
+## {background-image="https://decider.com/wp-content/uploads/2018/03/lost-in-space-60s.jpg?quality=90&strip=all&w=646&h=431&crop=1" background-size="1600px"}
 
 ## {background-image="https://cdn.mos.cms.futurecdn.net/YHXMXXEmBvyXUpTizWNkHP.jpg" background-size="cover"}
 
 ## {background-image="https://venkatarangan.com/blog/wp-content/uploads/2018/10/lost-in-space-pics.jpg" background-size="cover"}
 
+## Quelle est la problématique? {background-image="Hyades.jpg" background-size="cover" data-background-color=black}
+
+::: {.incremental}
+- On veut trouver l'image suivante...
+:::
+
+## Quelle est la problématique? {background-image="seci2f2.jpg" background-size="1600px" data-background-color=black}
+
+- On veut trouver l'image suivante...
+- Dans l'image suivante!
+
 ## {background-image="elephant_trunk.jpg" background-size="cover"}
 
-## Astrometry
+## Astrometry.net
+
+![](Astrometry.png)
+
+## Astrometry.net {.smaller}
+
+Après quelques secondes, j'obtiens [ceci](https://nova.astrometry.net/user_images/7571958#annotated).
+
+La figure de gauche place l'image sur la sphère céleste, une sphère imaginaire centrée sur la Terre.
 
 ::: {layout-ncol=3}
 
@@ -145,7 +178,26 @@ ggsave("thesky_real_missing.png",path=here("docs"),width = 5, height = 5)
 
 :::
 
-##
+## La constellation de Céphée
+
+![](https://upload.wikimedia.org/wikipedia/commons/c/c1/Cepheus_constellation_map-fr.png){fig-align="center}
+
+## Shère céleste {.smaller}
+
+Ce système utilise comme plan de référence la projection, sur la sphère céleste, de l'équateur de la Terre. Cette projection est l'équateur céleste.
+
+- L'ascension droite (RA) est l'angle mesuré sur l'équateur céleste à partir d'un point de référence, le point vernal, ou équinoxe de printemps correspondant à l'intersection entre l'équateur céleste et l'écliptique. C'est au point vernal que le soleil apparaît au premier jour du printemps. À partir de ce point, l'angle est mesuré vers l'est et comporte 24 divisions horaires.
+
+- La déclinaison (Dec) est l'angle mesuré perpendiculairement entre l'équateur céleste et l'objet céleste observé. Elle se mesure en degrés, positifs pour les objets situés dans l'hémisphère nord et négatifs pour ceux de l'hémisphère sud.
+
+## Shère céleste
+
+
+![](https://upload.wikimedia.org/wikipedia/commons/6/6a/Coordonnees_equatoriales.svg){fig-align="center"}
+
+
+
+## Astrometry.net
 
 | Info              |                            |
 |-------------------|----------------------------|
@@ -157,9 +209,23 @@ ggsave("thesky_real_missing.png",path=here("docs"),width = 5, height = 5)
 | Pixel scale       | 0.645 arcsec/pixel         |
 | Orientation       | Up is 348.3 degrees E of N |
 
+
 ## {background-image="astrometry_trunk_annotated.png" background-size="1200px"}
 
-## {background-image="astrometry_trunk_extracted.png" background-size="1200px"}
+## Astrométrie {.smaller}
+
+L'astrométrie, mieux connue autrefois sous le nom d'astronomie de position, est la branche de l'astronomie qui évalue la position, la distance et le mouvement des étoiles et des autres objets célestes.
+
+- L'image prise par une caméra sur une navette peut déterminer l'orientation de cette navette;
+
+- Permet de suivre une cible automatiquement avec un téléscope;
+
+- Le nombre d'images astronomiques est faramineux, les formats sont divers, les méta-données accompagnant ces images sont souvent inaccessibles, de mauvaise qualité, etc.
+
+Une des base de données utilisée est le [Sloan Digital Sky Survey](https://www.sdss.org/).
+
+## Pourquoi est-ce si difficile? {data-background-color=black}
+
 
 ## {data-background-color=black}
 
@@ -215,25 +281,89 @@ ggsave("thesky_real_missing.png",path=here("docs"),width = 5, height = 5)
 
 ![](mysky_real_missing_rect.png){.absolute top="100" right="10" width="500" height="500"}
 
+## Comment Astrometry.net fonctionne?
 
+::: {.incremental}
+- Nous devons créer un index à partir de base de données connues. Nous pouvons faire cette étape une seule fois, donc on peut prendre autant de temps voulu. 
+- Ensuite, nous devons trouver un moyen de chercher à travers cet index pour localiser une image précise.
+- Pour ce faire, on veut détecter certaines particularités d'une image et les décrire de telle façon qu'elles soient indépendantes de l'orientation et de l'échelle de l'image.
+:::
 
-## Quarto {data-background-color=red}
-
-Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
-
-## Bullets
-
-When you click the **Render** button a document will be generated that includes:
-
--   Content authored with markdown
--   Output from executable code
-
-## Code
-
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+## Détecter les étoiles
 
 ```{r}
-1 + 1
+
+#| label: mes-etoiles
+
+elephant_raster <- as.raster(elephant)
+ggplot(data = brightest, aes(x=X,y=Y))+
+  annotation_raster(
+    elephant_raster, 
+    xmin=0, 
+    xmax=w, 
+    ymin=0, 
+    ymax=h
+  ) +
+  geom_point(shape=1, colour="blue", fill=NA,size=3, stroke = 2)+
+  coord_fixed()+
+  theme_void()
+
 ```
+
+## Détecter les étoiles
+
+```{r}
+
+#| label: mes-etoiles
+
+elephant_raster <- as.raster(image_negate(elephant))
+ggplot(data = brightest, aes(x=X,y=Y))+
+  annotation_raster(
+    elephant_raster, 
+    xmin=0, 
+    xmax=w, 
+    ymin=0, 
+    ymax=h
+  ) +
+  geom_point(shape=1, colour="blue", fill=NA,size=3, stroke = 2)+
+  coord_fixed()+
+  theme_void()
+
+```
+
+## Tikz
+
+```{r quad-in-tikz, engine='tikz', fig.align='center'}
+\usetikzlibrary{calc}
+\usetikzlibrary{arrows.meta}
+\begin{tikzpicture}[scale=1,rotate=20]
+
+\coordinate[label={below left:A}] (A) at (0,0);
+\coordinate[label={above right:B}] (B) at (4,4);
+\coordinate[label={above left:C}] (C) at (0.8,2.4);
+\coordinate[label={below right:D}] (D) at (2.8,1.2);
+
+\draw[gray, fill=lightgray] (A)--(D)--(B)--(C)--cycle;
+
+\draw[gray] (0,0)--(4,0)--(4,4)--(0,4)--cycle;
+\draw[-Latex] (0,0)--(3.9,0);
+\draw[-Latex] (0,0)--(0,3.9);
+
+\draw[dashed] (0,2.4) node[left] {$y_C$} -- (0.8,2.4) -- (0.8,0) node[below] {$x_C$};
+\draw[dashed] (0,1.2) node[left] {$y_D$} -- (2.8,1.2) -- (2.8,0) node[below] {$x_D$};
+
+\draw (4,0)--++(0,-0.1) node[below] {1};
+\draw (0,4)--++(-0.1,0) node[left] {1};
+
+\draw[thick] (2,2) circle (2.8284);
+\foreach \pt in {A,B,C,D}{
+	\draw[fill=black] (\pt) circle (1pt);
+}
+
+\end{tikzpicture}
+```
+
+
+
 
 
